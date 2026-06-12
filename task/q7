@@ -1,0 +1,50 @@
+import cv2
+import mediapipe as mp
+import math
+
+cap = cv2.VideoCapture(0)
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+
+led = False
+pinched = False
+
+while True:
+    ret, frame = cap.read()
+
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    result = hands.process(rgb)
+
+    if result.multi_hand_landmarks:
+        hand = result.multi_hand_landmarks[0]
+
+        h, w, _ = frame.shape
+
+        ix = int(hand.landmark[8].x*w)
+        iy = int(hand.landmark[8].y*h)
+
+        tx = int(hand.landmark[4].x*w)
+        ty = int(hand.landmark[4].y*h)
+
+        distance = math.hypot(ix-tx, iy-ty)
+
+        if distance < 30 and not pinched:
+            led = not led
+            pinched = True
+
+        elif distance >= 30:
+            pinched = False
+
+    color = (0,255,0) if led else (0,0,255)
+
+    cv2.circle(frame, (50,50), 25, color, -1)
+
+    cv2.imshow("LED", frame)
+
+    if cv2.waitKey(1)==27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
