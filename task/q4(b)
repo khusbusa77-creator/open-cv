@@ -1,0 +1,34 @@
+import cv2
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+
+    h, w = frame.shape[:2]
+
+    q = cv2.resize(frame, (w//2, h//2))
+
+    tl = q
+
+    tr = cv2.flip(q, 0)
+
+    bl = cv2.cvtColor(q, cv2.COLOR_BGR2HSV)
+    bl = cv2.cvtColor(bl, cv2.COLOR_HSV2BGR)
+
+    red = q.copy()
+    red[:,:,0] = 0
+    red[:,:,1] = 0
+
+    top = cv2.hconcat([tl, tr])
+    bottom = cv2.hconcat([bl, red])
+
+    final = cv2.vconcat([top, bottom])
+
+    cv2.imshow("4 Views", final)
+
+    if cv2.waitKey(1)==27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
